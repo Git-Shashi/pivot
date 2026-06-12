@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
-import { Plus, Trash2, Search } from "lucide-react";
+import { Plus, Trash2, Search, LayoutGrid, List, Briefcase } from "lucide-react";
 import { listApplications, updateApplicationStatus, deleteApplication } from "@/api/applications";
 import { getDashboardStats } from "@/api/dashboard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Select,
   SelectContent,
@@ -23,6 +24,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { StatusBadge, PriorityBadge } from "@/components/StatusBadge";
+import KanbanBoard from "@/components/KanbanBoard";
 import { STATUS_OPTIONS } from "@/lib/constants";
 
 export default function Dashboard() {
@@ -32,6 +34,7 @@ export default function Dashboard() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [view, setView] = useState("kanban");
 
   useEffect(() => {
     let cancelled = false;
@@ -55,14 +58,14 @@ export default function Dashboard() {
   }, [statusFilter, search]);
 
   const handleStatusChange = async (id, status) => {
+    const previous = applications;
+    setApplications((prev) => prev.map((app) => (app.id === id ? { ...app, status } : app)));
     try {
       await updateApplicationStatus(id, status);
-      setApplications((prev) =>
-        prev.map((app) => (app.id === id ? { ...app, status } : app))
-      );
       const statsRes = await getDashboardStats();
       setStats(statsRes.data.data);
     } catch {
+      setApplications(previous);
       toast.error("Failed to update status");
     }
   };
@@ -82,11 +85,13 @@ export default function Dashboard() {
     }
   };
 
+  const hasFilters = search.trim() !== "" || statusFilter !== "ALL";
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-16 sm:pb-0">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Dashboard</h1>
-        <Button render={<Link to="/applications/new" />}>
+        <Button render={<Link to="/applications/new" />} className="hidden sm:inline-flex">
           <Plus className="size-4" />
           New Application
         </Button>
@@ -97,20 +102,28 @@ export default function Dashboard() {
           <CardHeader>
             <CardTitle className="text-sm font-normal text-muted-foreground">Total</CardTitle>
           </CardHeader>
-          <CardContent className="text-2xl font-semibold">{stats?.total ?? "–"}</CardContent>
+          <CardContent className="text-2xl font-semibold">
+            {loading ? <Skeleton className="h-8 w-10" /> : stats?.total ?? 0}
+          </CardContent>
         </Card>
         <Card>
           <CardHeader>
             <CardTitle className="text-sm font-normal text-muted-foreground">This Week</CardTitle>
           </CardHeader>
-          <CardContent className="text-2xl font-semibold">{stats?.thisWeek ?? "–"}</CardContent>
+          <CardContent className="text-2xl font-semibold">
+            {loading ? <Skeleton className="h-8 w-10" /> : stats?.thisWeek ?? 0}
+          </CardContent>
         </Card>
         <Card>
           <CardHeader>
             <CardTitle className="text-sm font-normal text-muted-foreground">Response Rate</CardTitle>
           </CardHeader>
           <CardContent className="text-2xl font-semibold">
-            {stats ? `${(stats.responseRate * 100).toFixed(0)}%` : "–"}
+            {loading ? (
+              <Skeleton className="h-8 w-14" />
+            ) : (
+              `${(stats.responseRate * 100).toFixed(0)}%`
+            )}
           </CardContent>
         </Card>
         <Card>
@@ -118,7 +131,7 @@ export default function Dashboard() {
             <CardTitle className="text-sm font-normal text-muted-foreground">Interviewing</CardTitle>
           </CardHeader>
           <CardContent className="text-2xl font-semibold">
-            {stats?.byStatus?.INTERVIEWING ?? 0}
+            {loading ? <Skeleton className="h-8 w-10" /> : stats?.byStatus?.INTERVIEWING ?? 0}
           </CardContent>
         </Card>
       </div>
@@ -146,37 +159,77 @@ export default function Dashboard() {
             ))}
           </SelectContent>
         </Select>
+        <div className="flex gap-1 rounded-lg bg-muted p-1">
+          <Button
+            variant={view === "kanban" ? "default" : "ghost"}
+            size="icon-sm"
+            onClick={() => setView("kanban")}
+            title="Kanban view"
+          >
+            <LayoutGrid className="size-4" />
+          </Button>
+          <Button
+            variant={view === "table" ? "default" : "ghost"}
+            size="icon-sm"
+            onClick={() => setView("table")}
+            title="Table view"
+          >
+            <List className="size-4" />
+          </Button>
+        </div>
       </div>
 
-      <Card className="overflow-hidden p-0">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="border-b bg-muted/50 text-left text-muted-foreground">
-              <tr>
-                <th className="px-4 py-3 font-medium">Company</th>
-                <th className="px-4 py-3 font-medium">Role</th>
-                <th className="px-4 py-3 font-medium">Status</th>
-                <th className="px-4 py-3 font-medium">Priority</th>
-                <th className="px-4 py-3 font-medium">Location</th>
-                <th className="px-4 py-3 font-medium">Applied</th>
-                <th className="px-4 py-3 font-medium"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading ? (
+      {loading ? (
+        <div className="flex gap-4 overflow-x-auto pb-2">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="w-64 shrink-0 space-y-3">
+              <Skeleton className="h-5 w-24" />
+              <Skeleton className="h-28 w-full" />
+              <Skeleton className="h-28 w-full" />
+            </div>
+          ))}
+        </div>
+      ) : applications.length === 0 ? (
+        <Card>
+          <CardContent className="flex flex-col items-center gap-3 py-12 text-center">
+            <Briefcase className="size-10 text-muted-foreground" />
+            <div>
+              <p className="font-medium">
+                {hasFilters ? "No applications match your filters" : "No applications yet"}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                {hasFilters
+                  ? "Try adjusting your search or status filter."
+                  : "Start tracking your job search by adding your first application."}
+              </p>
+            </div>
+            {!hasFilters && (
+              <Button render={<Link to="/applications/new" />}>
+                <Plus className="size-4" />
+                New Application
+              </Button>
+            )}
+          </CardContent>
+        </Card>
+      ) : view === "kanban" ? (
+        <KanbanBoard applications={applications} onStatusChange={handleStatusChange} />
+      ) : (
+        <Card className="overflow-hidden p-0">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="border-b bg-muted/50 text-left text-muted-foreground">
                 <tr>
-                  <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
-                    Loading...
-                  </td>
+                  <th className="px-4 py-3 font-medium">Company</th>
+                  <th className="px-4 py-3 font-medium">Role</th>
+                  <th className="px-4 py-3 font-medium">Status</th>
+                  <th className="px-4 py-3 font-medium">Priority</th>
+                  <th className="px-4 py-3 font-medium">Location</th>
+                  <th className="px-4 py-3 font-medium">Applied</th>
+                  <th className="px-4 py-3 font-medium"></th>
                 </tr>
-              ) : applications.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
-                    No applications found. Start by adding one.
-                  </td>
-                </tr>
-              ) : (
-                applications.map((app) => (
+              </thead>
+              <tbody>
+                {applications.map((app) => (
                   <tr key={app.id} className="border-b last:border-0 hover:bg-muted/30">
                     <td className="px-4 py-3 font-medium">
                       <Link to={`/applications/${app.id}`} className="hover:underline">
@@ -219,12 +272,21 @@ export default function Dashboard() {
                       </Button>
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </Card>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Card>
+      )}
+
+      <Button
+        render={<Link to="/applications/new" />}
+        size="icon-lg"
+        className="fixed bottom-6 right-6 rounded-full shadow-lg sm:hidden"
+        aria-label="New application"
+      >
+        <Plus className="size-5" />
+      </Button>
 
       <Dialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
         <DialogContent>

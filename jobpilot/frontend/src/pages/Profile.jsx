@@ -10,6 +10,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Card,
   CardContent,
@@ -167,9 +168,18 @@ export default function Profile() {
         </CardHeader>
         <CardContent className="space-y-4">
           {resumesLoading ? (
-            <p className="text-sm text-muted-foreground">Loading...</p>
+            <div className="space-y-2">
+              <Skeleton className="h-12 w-full" />
+              <Skeleton className="h-12 w-full" />
+            </div>
           ) : resumes.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No resumes uploaded yet.</p>
+            <div className="flex flex-col items-center gap-2 py-6 text-center">
+              <FileText className="size-8 text-muted-foreground" />
+              <p className="text-sm font-medium">No resumes uploaded yet</p>
+              <p className="text-sm text-muted-foreground">
+                Upload a resume below so you can attach it to applications.
+              </p>
+            </div>
           ) : (
             <ul className="space-y-2">
               {resumes.map((resume) => (

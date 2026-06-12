@@ -9,6 +9,7 @@ import {
 } from "@/api/applications";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Select,
@@ -78,7 +79,19 @@ export default function ApplicationDetail() {
   };
 
   if (loading) {
-    return <div className="py-12 text-center text-muted-foreground">Loading...</div>;
+    return (
+      <div className="space-y-6">
+        <Skeleton className="h-8 w-40" />
+        <Card>
+          <CardContent className="space-y-4">
+            <Skeleton className="h-7 w-64" />
+            <Skeleton className="h-4 w-40" />
+            <Skeleton className="h-6 w-32" />
+          </CardContent>
+        </Card>
+        <Skeleton className="h-64 w-full" />
+      </div>
+    );
   }
 
   if (!application) {

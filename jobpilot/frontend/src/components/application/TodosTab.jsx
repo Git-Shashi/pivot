@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { toast } from "sonner";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, ClipboardList } from "lucide-react";
 import { createTodo, toggleTodo, deleteTodo } from "@/api/todos";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -72,7 +72,13 @@ export default function TodosTab({ appId, todos, onChange }) {
       </form>
 
       {todos.length === 0 ? (
-        <p className="py-8 text-center text-sm text-muted-foreground">No tasks yet.</p>
+        <div className="flex flex-col items-center gap-2 py-10 text-center">
+          <ClipboardList className="size-8 text-muted-foreground" />
+          <p className="text-sm font-medium">No tasks yet</p>
+          <p className="text-sm text-muted-foreground">
+            Add follow-ups and reminders for this application.
+          </p>
+        </div>
       ) : (
         <ul className="space-y-2">
           {todos.map((todo) => (

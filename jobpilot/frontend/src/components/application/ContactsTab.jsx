@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Mail, Phone, Link2 } from "lucide-react";
+import { Plus, Pencil, Trash2, Mail, Phone, Link2, Users } from "lucide-react";
 import { addContact, updateContact, deleteContact } from "@/api/applications";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -156,7 +156,13 @@ export default function ContactsTab({ appId, contacts, onChange }) {
       </div>
 
       {contacts.length === 0 ? (
-        <p className="py-8 text-center text-sm text-muted-foreground">No contacts added yet.</p>
+        <div className="flex flex-col items-center gap-2 py-10 text-center">
+          <Users className="size-8 text-muted-foreground" />
+          <p className="text-sm font-medium">No contacts added yet</p>
+          <p className="text-sm text-muted-foreground">
+            Keep track of recruiters and interviewers for this application.
+          </p>
+        </div>
       ) : (
         <div className="space-y-3">
           {contacts.map((contact) => (

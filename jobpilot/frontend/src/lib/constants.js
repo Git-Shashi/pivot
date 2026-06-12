@@ -87,6 +87,24 @@ export const ROUND_RESULT_COLORS = {
   CANCELLED: "bg-zinc-100 text-zinc-700 dark:bg-zinc-500/20 dark:text-zinc-300",
 };
 
+export const KANBAN_COLUMNS = [
+  { id: "BOOKMARKED", title: "Bookmarked", statuses: ["BOOKMARKED"], dropStatus: "BOOKMARKED" },
+  { id: "APPLIED", title: "Applied", statuses: ["APPLIED"], dropStatus: "APPLIED" },
+  {
+    id: "INTERVIEWING",
+    title: "Interviewing",
+    statuses: ["OA", "INTERVIEWING"],
+    dropStatus: "INTERVIEWING",
+  },
+  { id: "OFFERED", title: "Offered", statuses: ["OFFERED"], dropStatus: "OFFERED" },
+  {
+    id: "CLOSED",
+    title: "Closed",
+    statuses: ["ACCEPTED", "REJECTED", "GHOSTED", "WITHDRAWN"],
+    dropStatus: "REJECTED",
+  },
+];
+
 export const COVER_LETTER_TONES = [
   { value: "professional", label: "Professional" },
   { value: "enthusiastic", label: "Enthusiastic" },
