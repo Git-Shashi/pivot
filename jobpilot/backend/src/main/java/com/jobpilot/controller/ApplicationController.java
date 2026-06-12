@@ -1,13 +1,16 @@
 package com.jobpilot.controller;
 
 import com.jobpilot.dto.request.CreateApplicationRequest;
+import com.jobpilot.dto.request.GenerateCoverLetterRequest;
 import com.jobpilot.dto.request.UpdateApplicationRequest;
+import com.jobpilot.dto.request.UpdateCoverLetterRequest;
 import com.jobpilot.dto.request.UpdateStatusRequest;
 import com.jobpilot.dto.response.ApiResponse;
 import com.jobpilot.dto.response.ApplicationDetailResponse;
 import com.jobpilot.dto.response.ApplicationSummaryResponse;
 import com.jobpilot.enums.ApplicationStatus;
 import com.jobpilot.service.ApplicationService;
+import com.jobpilot.service.CoverLetterService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -31,6 +34,7 @@ import java.util.List;
 public class ApplicationController {
 
     private final ApplicationService applicationService;
+    private final CoverLetterService coverLetterService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<ApplicationSummaryResponse>>> list(
@@ -69,5 +73,19 @@ public class ApplicationController {
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
         applicationService.delete(id);
         return ResponseEntity.ok(ApiResponse.of(null, "Application deleted"));
+    }
+
+    @PostMapping("/{id}/cover-letter/generate")
+    public ResponseEntity<ApiResponse<ApplicationDetailResponse>> generateCoverLetter(
+            @PathVariable Long id, @RequestBody(required = false) GenerateCoverLetterRequest request) {
+        ApplicationDetailResponse response = coverLetterService.generate(id, request);
+        return ResponseEntity.ok(ApiResponse.of(response, "Cover letter generated"));
+    }
+
+    @PutMapping("/{id}/cover-letter")
+    public ResponseEntity<ApiResponse<ApplicationDetailResponse>> updateCoverLetter(
+            @PathVariable Long id, @Valid @RequestBody UpdateCoverLetterRequest request) {
+        ApplicationDetailResponse response = coverLetterService.update(id, request);
+        return ResponseEntity.ok(ApiResponse.of(response, "Cover letter updated"));
     }
 }
