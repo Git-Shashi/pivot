@@ -35,4 +35,4 @@ gemini:
   model: ${GEMINI_MODEL:gemini-2.5-flash-lite}
 
 server:
-  port: ${SERVER_PORT:8080}
+  port: ${PORT:${SERVER_PORT:8080}}
