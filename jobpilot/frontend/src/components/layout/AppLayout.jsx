@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { NavLink, Outlet } from "react-router-dom";
 import { LayoutDashboard, Plus, User, LogOut, Briefcase } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
@@ -6,6 +7,15 @@ import {
   Avatar,
   AvatarFallback,
 } from "@/components/ui/avatar";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import ThemeToggle from "@/components/ThemeToggle";
 
 const navItems = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard, end: true },
@@ -15,6 +25,7 @@ const navItems = [
 
 export default function AppLayout() {
   const { user, logout } = useAuth();
+  const [confirmLogout, setConfirmLogout] = useState(false);
 
   const initials = user?.fullName
     ?.split(" ")
@@ -49,16 +60,25 @@ export default function AppLayout() {
             </NavLink>
           ))}
         </nav>
-        <div className="flex items-center gap-3 border-t px-4 py-4">
-          <Avatar className="h-8 w-8">
-            <AvatarFallback>{initials || "U"}</AvatarFallback>
-          </Avatar>
-          <div className="flex-1 overflow-hidden">
-            <p className="truncate text-sm font-medium">{user?.fullName}</p>
-            <p className="truncate text-xs text-muted-foreground">{user?.email}</p>
+        <div className="border-t px-4 py-4">
+          <div className="flex items-center gap-3">
+            <Avatar className="h-8 w-8">
+              <AvatarFallback>{initials || "U"}</AvatarFallback>
+            </Avatar>
+            <div className="flex-1 overflow-hidden">
+              <p className="truncate text-sm font-medium">{user?.fullName}</p>
+              <p className="truncate text-xs text-muted-foreground">{user?.email}</p>
+            </div>
+            <ThemeToggle />
           </div>
-          <Button variant="ghost" size="icon" onClick={logout} title="Log out">
+          <Button
+            variant="destructive"
+            size="sm"
+            className="mt-3 w-full justify-center"
+            onClick={() => setConfirmLogout(true)}
+          >
             <LogOut className="h-4 w-4" />
+            Log out
           </Button>
         </div>
       </aside>
@@ -69,9 +89,12 @@ export default function AppLayout() {
             <Briefcase className="h-5 w-5" />
             <span className="text-lg font-semibold">JobPilot</span>
           </div>
-          <Button variant="ghost" size="icon" onClick={logout} title="Log out">
-            <LogOut className="h-4 w-4" />
-          </Button>
+          <div className="flex items-center gap-1">
+            <ThemeToggle />
+            <Button variant="ghost" size="icon" onClick={() => setConfirmLogout(true)} title="Log out">
+              <LogOut className="h-4 w-4 text-destructive" />
+            </Button>
+          </div>
         </header>
 
         <nav className="flex justify-around border-b py-2 sm:hidden">
@@ -96,6 +119,25 @@ export default function AppLayout() {
           <Outlet />
         </main>
       </div>
+
+      <Dialog open={confirmLogout} onOpenChange={setConfirmLogout}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Log out?</DialogTitle>
+            <DialogDescription>
+              You'll need to sign in again to access your dashboard.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setConfirmLogout(false)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={logout}>
+              Log out
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
