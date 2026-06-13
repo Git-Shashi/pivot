@@ -23,11 +23,15 @@ public class DashboardService {
     public DashboardStatsResponse getStats() {
         Long userId = currentUserService.getCurrentUserId();
 
-        long total = applicationRepository.countByUserId(userId);
-
         Map<ApplicationStatus, Long> byStatus = new LinkedHashMap<>();
         for (ApplicationStatus status : ApplicationStatus.values()) {
-            byStatus.put(status, applicationRepository.countByUserIdAndStatus(userId, status));
+            byStatus.put(status, 0L);
+        }
+        long total = 0;
+        for (Object[] row : applicationRepository.countGroupedByStatus(userId)) {
+            long count = (Long) row[1];
+            byStatus.put((ApplicationStatus) row[0], count);
+            total += count;
         }
 
         long thisWeek = applicationRepository.countByUserIdAndCreatedAtAfter(userId, LocalDateTime.now().minusDays(7));

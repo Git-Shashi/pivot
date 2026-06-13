@@ -18,11 +18,10 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
 
     Optional<Application> findByIdAndUserId(Long id, Long userId);
 
-    long countByUserId(Long userId);
-
-    long countByUserIdAndStatus(Long userId, ApplicationStatus status);
-
     long countByUserIdAndCreatedAtAfter(Long userId, LocalDateTime after);
+
+    @Query("SELECT a.status, COUNT(a) FROM Application a WHERE a.user.id = :userId GROUP BY a.status")
+    List<Object[]> countGroupedByStatus(@Param("userId") Long userId);
 
     @Query("SELECT a FROM Application a WHERE a.user.id = :userId " +
             "AND (:status IS NULL OR a.status = :status) " +
